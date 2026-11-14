@@ -1023,3 +1023,17 @@
     flushOutbox();
   });
 })();
+
+/* Modern Web Guidance S1: keep aria-invalid in step with the visual invalid state, only after interaction. */
+(function () {
+  function sync(e) {
+    var f = e.target;
+    if (!f || !f.form || !f.form.classList.contains("lead-form") || f.name === "company_url") return;
+    if (f.validity.valid) f.removeAttribute("aria-invalid"); else f.setAttribute("aria-invalid", "true");
+  }
+  document.addEventListener("focusout", sync, true);
+  document.addEventListener("input", function (e) {
+    if (e.target && e.target.hasAttribute && e.target.hasAttribute("aria-invalid")) sync(e);
+  }, true);
+  document.addEventListener("invalid", sync, true);
+})();

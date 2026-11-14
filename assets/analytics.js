@@ -206,3 +206,31 @@
     } catch (err) {}
   }, true);
 })();
+
+/* Modern Web Guidance S6: field LCP / INP / CLS, pushed to dataLayer once when the page is hidden.
+ * No PII, no new endpoint: GTM decides where `web_vitals` goes. Fails silent where unsupported. */
+(function () {
+  try {
+    if (!("PerformanceObserver" in window)) return;
+    var v = { lcp: 0, cls: 0, inp: 0 }, sent = false, sess = 0, last = 0, cur = 0;
+    function obs(type, fn, opts) {
+      try { var o = new PerformanceObserver(function (l) { l.getEntries().forEach(fn); }); o.observe(Object.assign({ type: type, buffered: true }, opts || {})); } catch (e) {}
+    }
+    obs("largest-contentful-paint", function (e) { v.lcp = e.startTime; });
+    obs("layout-shift", function (e) {
+      if (e.hadRecentInput) return;
+      if (cur && e.startTime - last < 1000 && e.startTime - sess < 5000) { cur += e.value; }
+      else { cur = e.value; sess = e.startTime; }
+      last = e.startTime; if (cur > v.cls) v.cls = cur;
+    });
+    obs("event", function (e) { if (e.interactionId && e.duration > v.inp) v.inp = e.duration; }, { durationThreshold: 40 });
+    function send() {
+      if (sent) return; sent = true;
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: "web_vitals", source_page: location.pathname,
+        lcp_ms: Math.round(v.lcp), inp_ms: Math.round(v.inp), cls: Math.round(v.cls * 1000) / 1000 });
+    }
+    document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") send(); });
+    addEventListener("pagehide", send);
+  } catch (e) {}
+})();

@@ -382,3 +382,6 @@ footer .fcta:hover{background:var(--accent-deep)}
 .hero .eyebrow.on-dark{color:#e3bd8a}
 .hero .tagline em{color:#f0cb97}
 @media(max-width:1100px){.hero::before{background:linear-gradient(105deg,rgba(20,13,9,.94) 0%,rgba(20,13,9,.9) 100%)}}
+/* Modern Web Guidance S1: show invalid state only after the visitor interacted with the field */
+.lead-form input:user-invalid,.lead-form textarea:user-invalid{border-color:#b4533a;outline-color:#b4533a}
+h1,h2,h3{text-wrap:balance}

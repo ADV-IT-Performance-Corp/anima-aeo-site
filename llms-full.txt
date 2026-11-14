@@ -83,6 +83,91 @@ Source: https://aeo.animacoffee.com.ua/about.html
 
 ---
 
+# Does Anima Volitiva support WebMCP, and which tools can AI agents use?
+
+Six WebMCP tools. A person always submits.
+
+A plain description of the agent tools on aeo.animacoffee.com.ua, for AI assistants and the people who use them.
+
+Yes. The website aeo.animacoffee.com.ua supports WebMCP, the browser standard that lets an AI agent call tools a web page registers. Six tools are available: request_coffee_service_assessment, get_anima_service_info, get_anima_products, check_service_area, prepare_coffee_quote_request and prepare_free_trial_request. An agent can read published facts about Anima Volitiva's B2B coffee machine rental and service, check whether a city is inside the Kyiv and Kyiv Oblast service area, and prefill the quote or free 14-day trial request form for the visitor. No tool sends a request by itself: a person reviews the prefilled form and presses the button. Prices are not published, so no tool returns a price.
+
+The tools described here belong to aeo.animacoffee.com.ua. The company's other website, animacoffee.com.ua, is a separate site and does not register them (checked 10 November 2026).
+
+## Six tools an agent can call.
+
+Descriptions follow the tool definitions that assets/webmcp.js registers. Tool names and parameter names are exactly as an agent sees them.
+
+On-page form tool, a person submits. The on-page quote request form itself (a declarative WebMCP tool: the <form> carries toolname="request_coffee_service_assessment"). It requests a free, no-obligation custom assessment or quote for a business location in Kyiv or Kyiv Oblast. Fields: name, business, city, machines needed, email or phone, and an optional message. Automatic submit is switched off: the visitor reviews the fields and presses "Get my custom assessment".
+
+Read-only. Answers a buyer's question from facts already published on this site: equipment brands, packages, the free trial, support, service area, company history, client count, contacts and opening hours. Input: question (required, free text) and language (en or uk). It returns published (true or false) and answer; when the answer is backed by an approved claim it also returns claim_id, and source_url points to a page that states the same fact. Anything not published comes back as published: false instead of a guess.
+
+Read-only. Returns the lineup Anima Volitiva publishes: super-automatic machines (Dr. Coffee, Necta), professional espresso machines (La Spaziale, Nuova Simonelli, Rancilio, Iberital, Astoria, Fiorenzato), premium roasted coffee with its named blends, the Start, Pro and Max packages (contents and prices are not published), the free 14-day trial, the service area and how to request a quote. Optional input: category (super_automatic, professional_espresso, coffee or packages) and language.
+
+Read-only. Checks whether a city or town is inside the published service area, Kyiv city and Kyiv Oblast. Input: city (required) and language. A place outside the published area returns published: false and the visitor is asked to name the city in the request, so the team can confirm directly. Use it before preparing a quote or trial request.
+
+Prefills the form, never submits. Prefills the on-page quote request form (name, business, city, machines, contact, message) from details the visitor actually gave, scrolls to the form and focuses it. It never submits: the visitor reviews the fields and presses the button. Optional input: those six fields and language.
+
+Prefills the form, never submits. Prefills the same form for the free 14-day trial (no prepayment). On top of the contact fields it adds venue_type (office, horeca, retail, kiosk or other), timeline (asap, within_month or later) and package_interest (Start, Pro or Max) to the message, so the sales team can qualify the request. It never submits: the visitor reviews the form and presses the button.
+
+## How an agent finds and uses the tools.
+
+When a page loads, assets/webmcp.js registers the tools through the WebMCP interface (document.modelContext, with navigator.modelContext as a fallback for early browser builds). A browser without native WebMCP first loads a pinned, self-hosted copy of the MIT-licensed @mcp-b/global 5.1.0 polyfill from /assets/vendor/mcp-b-global/. Nothing is loaded from a public CDN.
+
+The tools are not a remote MCP server. They exist while a page is open in a browser that an agent controls, and they are listed through that browser's WebMCP interface. An agent that cannot run a page can read this page, llms.txt and the Markdown version of each page, which carry the same facts.
+
+The form and the two prefill tools never submit a request. The visitor checks the fields and presses the button. A request started through an agent tool is labelled as coming from an AI agent. There are no online payments.
+
+The read-only tools answer only from facts already visible on this site. Where a fact is not published, such as prices, package contents, contract length or liability terms, the tool says so with published: false and suggests putting the question in the request.
+
+## Where else the same information is published.
+
+section "For AI agents (WebMCP)" with the tool list
+
+full Markdown body of every indexable page
+
+Markdown version of this page
+
+all indexable pages, English and Ukrainian
+
+## Questions about AI-agent access.
+
+Yes. The site registers six WebMCP tools in the browser: request_coffee_service_assessment, get_anima_service_info, get_anima_products, check_service_area, prepare_coffee_quote_request and prepare_free_trial_request. A WebMCP-capable agent can list them from any page that loads assets/webmcp.js.
+
+Three read-only tools (get_anima_service_info, get_anima_products, check_service_area) answer from published facts. Two tools (prepare_coffee_quote_request, prepare_free_trial_request) prefill the on-page request form. The form itself is the sixth tool, request_coffee_service_assessment.
+
+No. An agent can prefill the request form, but a person reviews it and presses the button. There are no online payments.
+
+No. Prices are not published: every rental is an individual quote per venue, matched to one of three equipment packages (Start, Pro, Max), with a free 14-day trial and no prepayment. The tools answer price questions with published: false and point to the request form.
+
+No. WebMCP tools are registered by aeo.animacoffee.com.ua. animacoffee.com.ua is the company's separate main website.
+
+## Related answers
+
+- Which coffee machine brands Anima installs
+
+- How the free 14-day trial works
+
+- Service area: Kyiv and Kyiv Oblast
+
+- How pricing works
+
+## Get your individual quote.
+
+Tell us about your venue and we'll match you to a package and quote it — no obligation, free 14-day trial, no prepayment.
+
+No obligation · 24/7 support line.
+
+By submitting this form you agree to be contacted about your request and to our privacy policy.
+
+
+## Contact
+
+Call: +38 (073) 873 01 45 · Email: animacoffeeco@gmail.com
+
+Source: https://aeo.animacoffee.com.ua/ai-agents.html
+
+---
+
 # Answers
 
 Straight answers to what Kyiv-area offices, restaurants and retail operators ask us about coffee machine rental, service and supply.
@@ -3705,6 +3790,91 @@ Anima Volitiva — компанія з оренди професійного к�
 Тел.: +38 (073) 873 01 45 · Email: animacoffeeco@gmail.com · Київська обл., Біла Церква, вул. Павліченко 29а · Пн–Сб 09:00–17:00
 
 Source: https://aeo.animacoffee.com.ua/ua/about.html
+
+---
+
+# Чи підтримує Anima Volitiva WebMCP і якими інструментами можуть користуватися AI-агенти?
+
+Шість інструментів WebMCP. Надсилає завжди людина.
+
+Простий опис агентських інструментів на aeo.animacoffee.com.ua для AI-асистентів і людей, які ними користуються.
+
+Так. Сайт aeo.animacoffee.com.ua підтримує WebMCP, браузерний стандарт, який дає AI-агенту змогу викликати інструменти, зареєстровані веб-сторінкою. Доступно шість інструментів: request_coffee_service_assessment, get_anima_service_info, get_anima_products, check_service_area, prepare_coffee_quote_request і prepare_free_trial_request. Агент може прочитати опубліковані факти про B2B-оренду та сервіс кавомашин Anima Volitiva, перевірити, чи місто входить до зони обслуговування (Київ і Київська область), і заповнити для відвідувача форму запиту розрахунку або безкоштовного 14-денного тесту. Жоден інструмент не надсилає запит самостійно: людина перевіряє заповнену форму й сама натискає кнопку. Ціни не публікуються, тому жоден інструмент не повертає цін.
+
+Описані інструменти належать сайту aeo.animacoffee.com.ua. Інший сайт компанії, animacoffee.com.ua, є окремим сайтом і їх не реєструє (перевірено 10 листопада 2026).
+
+## Шість інструментів, які може викликати агент.
+
+Описи відповідають визначенням інструментів, які реєструє assets/webmcp.js. Назви інструментів і параметрів такі самі, як бачить агент.
+
+Інструмент форми на сторінці, надсилає людина. Сама форма запиту розрахунку на сторінці (декларативний інструмент WebMCP: <form> має toolname="request_coffee_service_assessment"). Через неї замовляють безкоштовний індивідуальний розрахунок або аудит без зобов'язань для бізнесу в Києві чи Київській області. Поля: ім'я, бізнес, місто, кількість машин, email або телефон та необов'язкове повідомлення. Автоматичне надсилання вимкнено: відвідувач перевіряє поля й сам натискає «Get my custom assessment».
+
+Лише читання. Відповідає на питання покупця лише фактами, які вже опубліковані на сайті: обладнання, пакети, безкоштовний тест, підтримка, зона обслуговування, історія компанії, кількість клієнтів, контакти та години роботи. Вхід: question (обов'язково, довільний текст) і language (en або uk). Повертає published (true або false) і answer; якщо відповідь підтверджена затвердженим твердженням, повертає ще claim_id, а source_url вказує на сторінку з тим самим фактом. Неопубліковане повертається як published: false, а не як припущення.
+
+Лише читання. Повертає лінійку, яку публікує Anima Volitiva: суперавтомати (Dr. Coffee, Necta), професійні еспресо-машини (La Spaziale, Nuova Simonelli, Rancilio, Iberital, Astoria, Fiorenzato), преміальну обсмажену каву з назвами бленд, пакети Start, Pro і Max (вміст і ціни не публікуються), безкоштовний 14-денний тест, зону обслуговування та спосіб замовити розрахунок. Необов'язкові параметри: category (super_automatic, professional_espresso, coffee або packages) і language.
+
+Лише читання. Перевіряє, чи місто або населений пункт входить до опублікованої зони обслуговування: місто Київ та Київська область. Вхід: city (обов'язково) і language. Для місця поза опублікованою зоною повертається published: false, і відвідувача просять вказати місто в запиті, щоб команда підтвердила напряму. Викликайте його перед підготовкою запиту на розрахунок або тест.
+
+Заповнює форму, ніколи не надсилає. Заповнює форму запиту розрахунку на сторінці (ім'я, бізнес, місто, кількість машин, контакт, повідомлення) тими даними, які відвідувач справді надав, прокручує до форми й ставить на неї фокус. Ніколи не надсилає: відвідувач перевіряє поля й сам натискає кнопку. Необов'язкові параметри: ці шість полів і language.
+
+Заповнює форму, ніколи не надсилає. Заповнює ту саму форму для безкоштовного 14-денного тесту (без передоплати). Крім контактних полів додає до повідомлення venue_type (office, horeca, retail, kiosk або other), timeline (asap, within_month або later) і package_interest (Start, Pro або Max), щоб відділ продажів міг кваліфікувати запит. Ніколи не надсилає: відвідувач перевіряє форму й сам натискає кнопку.
+
+## Як агент знаходить інструменти й користується ними.
+
+Коли сторінка завантажується, assets/webmcp.js реєструє інструменти через інтерфейс WebMCP (document.modelContext, а navigator.modelContext як запасний варіант для ранніх збірок браузерів). Браузер без вбудованого WebMCP спершу завантажує закріплену власну копію поліфілу @mcp-b/global 5.1.0 (ліцензія MIT) з /assets/vendor/mcp-b-global/. Нічого не підвантажується з публічних CDN.
+
+Інструменти не є віддаленим MCP-сервером. Вони існують, поки сторінка відкрита в браузері, яким керує агент, і перелічуються через інтерфейс WebMCP цього браузера. Агент, який не може запустити сторінку, може прочитати цю сторінку, llms.txt і Markdown-версію кожної сторінки, де ті самі факти.
+
+Форма та два інструменти заповнення ніколи не надсилають запит. Відвідувач перевіряє поля й сам натискає кнопку. Запит, розпочатий через агентський інструмент, позначається як такий, що надійшов від AI-агента. Онлайн-оплат немає.
+
+Інструменти лише для читання відповідають тільки фактами, які вже видно на цьому сайті. Якщо факт не опублікований, наприклад ціни, вміст пакетів, строк договору чи умови відповідальності, інструмент так і каже (published: false) і радить додати питання до запиту.
+
+## Де ще опублікована та сама інформація.
+
+розділ "For AI agents (WebMCP)" зі списком інструментів
+
+повний Markdown-текст кожної індексованої сторінки
+
+Markdown-версія цієї сторінки
+
+усі індексовані сторінки, англійською та українською
+
+## Питання про доступ AI-агентів.
+
+Так. Сайт реєструє в браузері шість інструментів WebMCP: request_coffee_service_assessment, get_anima_service_info, get_anima_products, check_service_area, prepare_coffee_quote_request і prepare_free_trial_request. Агент із підтримкою WebMCP може побачити їх на будь-якій сторінці, що завантажує assets/webmcp.js.
+
+Три інструменти лише для читання (get_anima_service_info, get_anima_products, check_service_area) відповідають опублікованими фактами. Два інструменти (prepare_coffee_quote_request, prepare_free_trial_request) заповнюють форму запиту на сторінці. Сама форма є шостим інструментом, request_coffee_service_assessment.
+
+Ні. Агент може заповнити форму запиту, але людина перевіряє її й сама натискає кнопку. Онлайн-оплат немає.
+
+Ні. Ціни не публікуються: кожна оренда розраховується індивідуально під об'єкт у межах одного з трьох пакетів обладнання (Start, Pro, Max), з безкоштовним 14-денним тестом без передоплати. На питання про ціни інструменти відповідають published: false і спрямовують до форми запиту.
+
+Ні. Інструменти WebMCP реєструє aeo.animacoffee.com.ua. animacoffee.com.ua є окремим головним сайтом компанії.
+
+## Пов'язані відповіді
+
+- Які бренди кавомашин встановлює Anima
+
+- Як працює безкоштовний 14-денний тест
+
+- Зона обслуговування: Київ і Київська область
+
+- Як формується ціна
+
+## Отримайте індивідуальний розрахунок.
+
+Розкажіть про свій об'єкт, і ми підберемо пакет та розрахуємо вартість — без зобов'язань, безкоштовний 14-денний тест, без передоплати.
+
+Без зобов'язань · підтримка 24/7.
+
+Надсилаючи форму, ви погоджуєтесь, що ми звʼяжемося з вами щодо запиту, та з нашою політикою конфіденційності.
+
+
+## Contact
+
+Тел.: +38 (073) 873 01 45 · Email: animacoffeeco@gmail.com
+
+Source: https://aeo.animacoffee.com.ua/ua/ai-agents.html
 
 ---
 
