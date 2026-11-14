@@ -389,11 +389,44 @@
   function register(ctx) {
     if (window.__animaWebmcpState === "registered") return;
     window.__animaWebmcpState = "registered";
-    watchDeclarativeAgent(ctx);
+    if (!window.__animaWebmcpWatched) {
+      window.__animaWebmcpWatched = true;
+      watchDeclarativeAgent(ctx);
+    }
+
+    // One shared AbortController per page: aborting on pagehide removes every
+    // registered tool (measured: `registerTool(tool, { signal })` is honoured;
+    // a `signal` property on the tool object itself is NOT). Older contexts
+    // that reject the options argument synchronously fall back to the
+    // single-argument call so registration still succeeds.
+    var controller = (typeof AbortController !== "undefined") ? new AbortController() : null;
+    window.__animaWebmcpAbort = controller ? function () { controller.abort(); } : null;
+    // Lifecycle listeners are installed once. A page restored from the
+    // back/forward cache fires pageshow with persisted=true after pagehide
+    // already tore the tools down, so it registers them again (fresh controller).
+    if (!window.__animaWebmcpLifecycle && typeof window.addEventListener === "function") {
+      window.__animaWebmcpLifecycle = true;
+      window.addEventListener("pagehide", function () {
+        if (window.__animaWebmcpAbort) window.__animaWebmcpAbort();
+        window.__animaWebmcpState = "released";
+      });
+      window.addEventListener("pageshow", function (e) {
+        if (e && e.persisted && window.__animaWebmcpState === "released") register(ctx);
+      });
+    }
 
     function reg(tool) {
       try {
-        var r = ctx.registerTool(tool);
+        var r;
+        if (controller) {
+          try {
+            r = ctx.registerTool(tool, { signal: controller.signal });
+          } catch (e) {
+            r = ctx.registerTool(tool);
+          }
+        } else {
+          r = ctx.registerTool(tool);
+        }
         if (r && typeof r.catch === "function") r.catch(function () {});
       } catch (e) { /* a failed registration must never break the page */ }
     }
