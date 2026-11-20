@@ -167,6 +167,33 @@
   }
   window.animaAttribution = { aiSource: function () { return aiSourceCached; } };
 
+  // --- Roistat visit params (2026-11-18). Roistat reports group by the visit,
+  // not by lead fields, so channel labels are written onto the visit itself:
+  // roistat_param1 = canonical source, roistat_param2 = AI answer engine.
+  // Labels only (fixed allowlist / lowercase utm), never contact data.
+  var SRC_CANON = { fb: "facebook", "facebook.com": "facebook", "m.facebook.com": "facebook",
+    ig: "instagram", "instagram.com": "instagram", "google ads": "google", googleads: "google" };
+  function canonicalSource() {
+    var v = "";
+    try { v = (new URLSearchParams(location.search).get("utm_source") || ""); } catch (e) {}
+    if (!v) { try { v = (JSON.parse(sessionStorage.getItem("anima_utm_v1") || "{}").utm_source || ""); } catch (e) {} }
+    if (!v) { try { if (new URLSearchParams(location.search).get("gclid")) v = "google"; } catch (e) {} }
+    v = String(v).toLowerCase().trim().slice(0, 40);
+    if (Object.prototype.hasOwnProperty.call(SRC_CANON, v)) v = SRC_CANON[v];
+    return /^[a-z0-9._ -]*$/.test(v) ? v : "";
+  }
+  try {
+    var prevLoaded = window.onRoistatAllModulesLoaded;
+    window.onRoistatAllModulesLoaded = function () {
+      try { if (typeof prevLoaded === "function") prevLoaded.apply(this, arguments); } catch (e) {}
+      try {
+        window.roistat.registerOnVisitProcessedCallback(function () {
+          try { window.roistat.setRoistatParams(canonicalSource() || null, aiSourceCached || null, null); } catch (e) {}
+        });
+      } catch (e) {}
+    };
+  } catch (e) {}
+
   // --- Conversion hook, called by lead.js ONLY after the first-party lead
   // API returns HTTP 200 with a lead_id (never on mailto: open, never
   // speculatively). No currency/value — this is a non-revenue event — and
@@ -184,6 +211,22 @@
     try { if (GA4_LIVE) gtag("event", "lead_accepted", ev); } catch (e) {}
     try { if (METRICA_LIVE && window.ym) ym(METRICA_ID, "reachGoal", "lead_accepted"); } catch (e) {}
   };
+
+  // --- Lead-form funnel step (2026-11-19). Fires once per form per page view,
+  // on the first focus of any field, so GA4 can show view -> start -> lead_accepted
+  // drop-off per page. No field values, no PII; passive listener, never blocks input.
+  var formStarted = {};
+  document.addEventListener("focusin", function (e) {
+    try {
+      var f = e.target && e.target.closest ? e.target.closest("form.lead-form") : null;
+      if (!f) return;
+      var id = f.id || "form";
+      if (formStarted[id]) return;
+      formStarted[id] = 1;
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: "lead_form_start", source_page: location.pathname, ai_source: aiSourceCached });
+    } catch (err) {}
+  }, true);
 
   // --- Click-to-contact tracking for tel:/Telegram/mailto links anywhere on
   // the page (header, footer, contact blocks). The sticky bar already pushes

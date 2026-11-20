@@ -30,7 +30,7 @@
  * submit, chosen in this order — (1) data-endpoint set -> the POST path
  * above, unchanged; (2) else Roistat ready (window.roistatGoal.reach is a
  * function, set by assets/analytics.js once its counter script has
- * loaded) -> one roistatGoal.reach() call, whose Roistat->AmoCRM
+ * loaded) -> one roistatGoal.reach() call, whose Roistat->Kommo
  * integration opens the CRM deal, no POST, and a client-generated lead_id
  * is used for animaTrackLead/respondWith; (2b) configured
  * (window.roistatProjectId set) but not ready yet -> wait up to ~4s
@@ -547,7 +547,7 @@
   // Keeps the sending guard held until the deferred form.reset() actually
   // runs (Codex fast-follow, 2026-09-14) — releasing it right after
   // respondWith() let a second executeTool() racing that window fire a
-  // second reach() for the same submit (double AmoCRM deal).
+  // second reach() for the same submit (double Kommo deal).
   function deliverRoistatAgent(form, data, origin) {
     var leadId = reachRoistat(data, origin);
     if (leadId) {
@@ -955,7 +955,7 @@
 
   // ChatKit channel (assets/chat.js): the chat widget delivers through the
   // SAME three-way path as the forms (first-party endpoint -> Roistat ->
-  // contact fallback), so the Roistat -> AmoCRM integration and the
+  // contact fallback), so the Roistat -> Kommo integration and the
   // lead_accepted conversion stay identical; only lead_origin/lead_source
   // say "chatkit". Resolves {status: "accepted", leadId} | {status:
   // "not_connected", ...} | {status: "error"}; never claims success

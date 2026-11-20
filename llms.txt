@@ -106,6 +106,15 @@ shown only if neither a backend endpoint nor Roistat is available.
 - [Для AI-агентів (WebMCP)](https://aeo.animacoffee.com.ua/ua/ai-agents.html): шість інструментів WebMCP для AI-агента на цьому сайті, що робить кожен і що підтверджує людина
 - [Answers / Q&A](https://aeo.animacoffee.com.ua/answers.html): 13 question-targeted answers (rental, contract, beans, training, maintenance, machines) — Ukrainian at /ua/answers.html
 
+## Blog
+
+- https://aeo.animacoffee.com.ua/blog/index.html — buyer guides (EN); Ukrainian: https://aeo.animacoffee.com.ua/ua/blog/index.html
+- https://aeo.animacoffee.com.ua/blog/capex-vs-opex-b2b-coffee-kyiv.html — CAPEX vs OPEX: structuring high-performance B2B coffee operations in Kyiv Oblast
+- https://aeo.animacoffee.com.ua/blog/coffee-machine-by-venue-office-kiosk-restaurant-kyiv.html — Which coffee machine for an office, a kiosk or a restaurant: a venue-by-venue guide
+- https://aeo.animacoffee.com.ua/blog/coffee-machine-free-trial-checklist-kyiv.html — Free coffee-machine trial: how to test fairly on your own volume
+- https://aeo.animacoffee.com.ua/blog/compare-coffee-machine-rental-offers-kyiv.html — How to compare coffee machine rental offers: seven questions to ask every supplier
+- https://aeo.animacoffee.com.ua/blog/switch-coffee-supplier-checklist-kyiv.html — Switching your coffee-machine supplier: five checks before you sign
+
 ## Answer pages
 - https://aeo.animacoffee.com.ua/answers/coffee-machine-support-kyiv-oblast.html
 - https://aeo.animacoffee.com.ua/answers/corporate-office-coffee-program.html

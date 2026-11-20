@@ -7,7 +7,7 @@
  * choices, a cups/day number and the visitor's name + contact.
  *
  * Delivery is window.animaLead.submitChat() from assets/lead.js: the SAME
- * path as the forms (first-party endpoint -> Roistat reach() -> AmoCRM, else
+ * path as the forms (first-party endpoint -> Roistat reach() -> Kommo, else
  * the honest contact fallback). Leads are tagged lead_origin/lead_source =
  * "chatkit" (Roistat fields, dataLayer lead_accepted) for end-to-end
  * analytics. "Sent" is shown only after a real accept/reach; otherwise the
@@ -30,6 +30,7 @@
     city: "Де знаходиться заклад?", cities: [["Київ", "Київ"], ["Київська область", "Київська область"], ["Інше", "Інше місто"]],
     cityOther: "Дякуємо. Зону обслуговування для вашого міста уточнить менеджер.",
     cityOk: "Ми працюємо в Києві та Київській області.",
+    start: "Коли плануєте запуск?", starts: [["week", "Цього тижня"], ["month", "Протягом місяця"], ["later", "Пізніше / поки обираю"]],
     more: "Хочете дізнатись ще щось, чи залишимо заявку?",
     qs: [["service", "Що входить у сервіс?"], ["terms", "Умови та ціна"], ["trial", "Пробний період"], ["machines", "Які апарати?"]],
     lead: "Залишити заявку",
@@ -53,6 +54,7 @@
     city: "Where is the venue?", cities: [["Kyiv", "Kyiv"], ["Kyiv Oblast", "Kyiv Oblast"], ["Other", "Another city"]],
     cityOther: "Thanks. A manager will confirm the service area for your city.",
     cityOk: "We serve Kyiv and Kyiv Oblast.",
+    start: "When do you plan to start?", starts: [["week", "This week"], ["month", "Within a month"], ["later", "Later / still choosing"]],
     more: "Want to know anything else, or shall we take your request?",
     qs: [["service", "What does service include?"], ["terms", "Terms and price"], ["trial", "Free trial"], ["machines", "Which machines?"]],
     lead: "Leave a request",
@@ -72,7 +74,7 @@
 
   var CONTACT = { phone: "+38 (073) 873 01 45", tel: "tel:+380738730145", email: "animacoffeeco@gmail.com", tg: "https://t.me/Animavolitiva" };
   var EMAIL_RE = /^[^@\s]{1,64}@[^@\s]{1,255}\.[A-Za-z0-9-]{2,24}$/;
-  var state = { venue: "", cups: "", city: "", asked: [], started: false, sent: false, sending: false };
+  var state = { venue: "", venueCode: "", cups: "", city: "", cityCode: "", start: "", startLabel: "", asked: [], started: false, sent: false, sending: false };
 
   function el(tag, cls, text) {
     var n = document.createElement(tag);
@@ -131,7 +133,7 @@
 
   function stepVenue() {
     chips(T.venues, function (v, label) {
-      state.venue = label; say(label, "me"); track("chatkit_step", { step: "venue", value: v }); stepCups();
+      state.venue = label; state.venueCode = v; say(label, "me"); track("chatkit_step", { step: "venue", value: v }); stepCups();
     });
   }
   function stepCups() {
@@ -153,10 +155,28 @@
   function stepCity() {
     say(T.city);
     chips(T.cities, function (v, label) {
-      state.city = v; say(label, "me");
+      state.city = v; state.cityCode = v === T.cities[2][0] ? "other" : "kyiv_area"; say(label, "me");
       say(v === T.cities[2][0] ? T.cityOther : T.cityOk);
-      stepMenu();
+      stepStart();
     });
+  }
+  function stepStart() {
+    say(T.start);
+    chips(T.starts, function (v, label) {
+      state.start = v; state.startLabel = label; say(label, "me"); track("chatkit_step", { step: "start", value: v }); stepMenu();
+    });
+  }
+  // Lead band for the manager (A/B/C). PLACEHOLDER thresholds: Anima has not yet
+  // supplied volume or conversion data, so these are neutral and meant to be tuned.
+  // Keep in step with PARAMS in ADV-Strategy-Core deep_research/leadgen/anima_sales_assist.py.
+  // Order only: the manager still calls every lead; nothing is hidden or auto-declined.
+  function band() {
+    var n = parseInt(state.cups, 10) || 0, pts = 0;
+    pts += n >= 100 ? 3 : n >= 30 ? 2 : n > 0 ? 1 : 0;
+    pts += state.cityCode === "kyiv_area" ? 2 : 0;
+    pts += state.start === "week" ? 3 : state.start === "month" ? 2 : 0;
+    pts += state.venueCode === "horeca" || state.venueCode === "office" ? 1 : 0;
+    return pts >= 7 ? "A" : pts >= 4 ? "B" : "C";
   }
   function stepMenu() {
     say(T.more);
@@ -175,6 +195,9 @@
     if (state.venue) parts.push((uk ? "Заклад: " : "Venue: ") + state.venue);
     if (state.cups) parts.push((uk ? "Чашок/день: " : "Cups/day: ") + state.cups);
     if (state.city) parts.push((uk ? "Місто: " : "City: ") + state.city);
+    if (state.start) parts.push((uk ? "Старт: " : "Start: ") + (state.startLabel || state.start));
+    parts.push("[qual seg=" + (state.venueCode || "?") + " cups=" + (state.cups || "?") + " area=" + (state.cityCode || "?") +
+      " start=" + (state.start || "?") + " band=" + band() + "]");
     return parts.join("; ");
   }
 
