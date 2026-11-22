@@ -8,10 +8,6 @@ _Last updated: 2026-09-15 — lead form UI available; submissions delivered to t
 
 > Languages: the site is bilingual. Ukrainian is the primary language for the native Kyiv market (served under /ua/), with English available at the root for wider reach. Every page has both a Ukrainian and an English version, cross-linked via hreflang (uk / en / x-default→uk).
 
-## For AI agents (UCP)
-
-Universal Commerce Protocol (UCP, spec 2026-08-25) profile: https://aeo.animacoffee.com.ua/.well-known/ucp — REST service with the `dev.ucp.shopping.checkout` capability. Anima rents machines under an individual quote per venue: no published prices, no online payment. `POST /checkout-sessions` therefore returns a UCP error envelope (`status: error`, code `quote_required`, `continue_url` to https://aeo.animacoffee.com.ua/how-to-rent.html). If the platform passes `buyer` contact and `consent.contact: true`, the quote request is stored and goes to an Anima manager (via Roistat to Kommo).
-
 ## For AI agents (WebMCP)
 
 aeo.animacoffee.com.ua supports WebMCP. Machine-readable tool manifest: https://aeo.animacoffee.com.ua/.well-known/mcp.json (WebMCP in-browser tools; this site is not an MCP JSON-RPC server). Human-readable description of every tool: [For AI agents](https://aeo.animacoffee.com.ua/ai-agents.html) (Ukrainian: https://aeo.animacoffee.com.ua/ua/ai-agents.html). The tools are registered by this site only; the company's separate main website animacoffee.com.ua does not register them.
