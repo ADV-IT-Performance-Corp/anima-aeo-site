@@ -1,0 +1,260 @@
+{
+  "schema_version": "2026-11-22",
+  "provider": "Anima Volitiva",
+  "site": "https://aeo.animacoffee.com.ua",
+  "protocol": "WebMCP (in-browser tools)",
+  "mcp_json_rpc_server": false,
+  "note": "These tools are registered by assets/webmcp.js inside a page open in a WebMCP-capable browser. This site is NOT an MCP JSON-RPC server: there is no MCP transport endpoint to connect an MCP client to.",
+  "tools_documentation_url": "https://aeo.animacoffee.com.ua/ai-agents.html",
+  "tools_documentation_url_uk": "https://aeo.animacoffee.com.ua/ua/ai-agents.html",
+  "llms_txt_url": "https://aeo.animacoffee.com.ua/llms.txt",
+  "registration_script": "https://aeo.animacoffee.com.ua/assets/webmcp.js",
+  "capabilities": {
+    "imperative_model_context": true,
+    "declarative_html_forms": true,
+    "chrome_builtin_ai_bridge": "availability status only",
+    "human_handoff": true,
+    "auto_submit": false
+  },
+  "tools": [
+    {
+      "name": "request_coffee_service_assessment",
+      "kind": "declarative_form",
+      "title": "On-page quote request form",
+      "description": "The on-page quote request form (declarative WebMCP tool on the lead form of every page). Requests a custom assessment or quote for a business location in Kyiv or Kyiv Oblast. Automatic submit is off: the visitor reviews the fields and presses the button.",
+      "read_only": false,
+      "submits_without_human": false
+    },
+    {
+      "name": "get_anima_service_info",
+      "kind": "imperative",
+      "title": "Anima Volitiva service facts",
+      "description": "Answer a buyer's question about Anima Volitiva's B2B coffee machine rental and service (equipment brands, packages, trial, support/SLA, coverage area, company history, client count, contacts/hours) using only facts already published on this site. Anything not published on the site is reported as not published, never invented.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "The visitor's question about Anima's coffee machine rental/service, in their own words."
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "uk"
+            ],
+            "description": "Language to answer in."
+          },
+          "local_search": {
+            "type": "boolean",
+            "description": "Use an already-installed on-device model to suggest a cited public passage when keyword lookup misses. Defaults to false."
+          }
+        },
+        "required": [
+          "question"
+        ]
+      },
+      "read_only": true,
+      "submits_without_human": false
+    },
+    {
+      "name": "get_anima_products",
+      "kind": "imperative",
+      "title": "Anima Volitiva published lineup",
+      "description": "Return the lineup Anima publishes: machine brands per type (super-automatic, professional espresso), premium roasted coffee, the Start/Pro/Max packages (custom quote, prices not published), the free 14-day trial with no prepayment, the service area, and how to request a quote. Optional category filter. Read-only; returns only published items.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "super_automatic",
+              "professional_espresso",
+              "coffee",
+              "packages"
+            ],
+            "description": "Optional: limit to one product category."
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "uk"
+            ],
+            "description": "Language to answer in."
+          }
+        }
+      },
+      "read_only": true,
+      "submits_without_human": false
+    },
+    {
+      "name": "prepare_coffee_quote_request",
+      "kind": "imperative",
+      "title": "Prefill the coffee service quote request",
+      "description": "Prefill the on-page quote request form (name, business, city, machines, contact, message) from details the visitor gave you, scroll to it and focus it. It NEVER submits: the visitor reviews the fields and presses 'Get my custom assessment' themselves. Only pass details the visitor actually provided.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Contact person's full name."
+          },
+          "business": {
+            "type": "string",
+            "description": "Business or venue name."
+          },
+          "city": {
+            "type": "string",
+            "description": "City. Service area is Kyiv city and Kyiv Oblast."
+          },
+          "machines": {
+            "type": "string",
+            "description": "Number of coffee machines needed, if known."
+          },
+          "contact": {
+            "type": "string",
+            "description": "Email or phone number to reach the visitor."
+          },
+          "message": {
+            "type": "string",
+            "description": "Optional notes for the Anima team."
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "uk"
+            ],
+            "description": "Language of the returned instructions."
+          }
+        }
+      },
+      "read_only": false,
+      "submits_without_human": false
+    },
+    {
+      "name": "check_service_area",
+      "kind": "imperative",
+      "title": "Check whether Anima serves a city",
+      "description": "Check whether a city is inside Anima Volitiva's published service area (Kyiv city and Kyiv Oblast). Read-only. Use it BEFORE preparing a quote or trial request. If the city is not covered by a published claim the answer is published:false and the visitor should name the city in the request.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "City or town of the venue."
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "uk"
+            ],
+            "description": "Language to answer in."
+          }
+        },
+        "required": [
+          "city"
+        ]
+      },
+      "read_only": true,
+      "submits_without_human": false
+    },
+    {
+      "name": "get_chrome_builtin_ai_status",
+      "kind": "imperative",
+      "title": "Chrome built-in AI availability",
+      "description": "Report whether this browser exposes Chrome's on-device AI (Prompt API and Summarizer API): each is one of available, downloadable, downloading, unavailable or unsupported. Read-only availability check: nothing is downloaded, no prompt is sent and no data leaves the device.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "uk"
+            ],
+            "description": "Language of the returned note."
+          }
+        }
+      },
+      "read_only": true,
+      "submits_without_human": false
+    },
+    {
+      "name": "prepare_free_trial_request",
+      "kind": "imperative",
+      "title": "Prefill a free 14-day trial request",
+      "description": "Prefill the on-page request form for the free 14-day trial (no prepayment) from details the visitor gave you, adding venue type, timeline and package interest to the message so the sales team can qualify the lead. It NEVER submits: the visitor reviews the fields and presses the button.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Contact person's full name."
+          },
+          "business": {
+            "type": "string",
+            "description": "Business or venue name."
+          },
+          "city": {
+            "type": "string",
+            "description": "City. Service area is Kyiv city and Kyiv Oblast."
+          },
+          "machines": {
+            "type": "string",
+            "description": "Number of coffee machines needed, if known."
+          },
+          "contact": {
+            "type": "string",
+            "description": "Email or phone number to reach the visitor."
+          },
+          "venue_type": {
+            "type": "string",
+            "enum": [
+              "office",
+              "horeca",
+              "retail",
+              "kiosk",
+              "other"
+            ],
+            "description": "Kind of venue."
+          },
+          "timeline": {
+            "type": "string",
+            "enum": [
+              "asap",
+              "within_month",
+              "later"
+            ],
+            "description": "When the visitor wants to start."
+          },
+          "package_interest": {
+            "type": "string",
+            "enum": [
+              "Start",
+              "Pro",
+              "Max"
+            ],
+            "description": "Package the visitor leans towards, if any (contents and prices are not published)."
+          },
+          "message": {
+            "type": "string",
+            "description": "Optional notes for the Anima team."
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "uk"
+            ],
+            "description": "Language of the returned instructions."
+          }
+        }
+      },
+      "read_only": false,
+      "submits_without_human": false
+    }
+  ]
+}

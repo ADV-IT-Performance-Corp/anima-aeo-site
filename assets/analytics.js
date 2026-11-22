@@ -55,6 +55,16 @@
   var METRICA_LIVE = /^\d{5,}$/.test(METRICA_ID);  // only a numeric counter is live
   var ROISTAT_LIVE = !!ROISTAT_PROJECT_ID;         // empty string -> skip
 
+  // Query strings and fragments can contain contact details or private tokens.
+  // App-constructed telemetry uses the current origin/route only; vendor code
+  // and the separate inline GTM loader still need their own consent controls.
+  function pagePath(value) {
+    try {
+      var u = new URL(value || location.pathname, location.href);
+      return u.origin === location.origin ? u.pathname : location.pathname;
+    } catch (e) { return location.pathname; }
+  }
+
   // --- GA4 (gtag.js) ---
   window.dataLayer = window.dataLayer || [];
   function gtag() { dataLayer.push(arguments); }
@@ -62,6 +72,7 @@
   if (GA4_LIVE) {
     var g = document.createElement("script");
     g.async = true;
+    g.referrerPolicy = "no-referrer";
     g.src = "https://www.googletagmanager.com/gtag/js?id=" + GA4_ID;
     document.head.appendChild(g);
     gtag("js", new Date());
@@ -74,7 +85,7 @@
       m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments); };
       m[i].l = 1 * new Date();
       k = e.createElement(t); a = e.getElementsByTagName(t)[0];
-      k.async = 1; k.src = r; a.parentNode.insertBefore(k, a);
+      k.async = 1; k.referrerPolicy = "no-referrer"; k.src = r; a.parentNode.insertBefore(k, a);
     })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
     ym(METRICA_ID, "init", { clickmap: true, trackLinks: true, accurateTrackBounce: true });
   }
@@ -91,14 +102,14 @@
       (function (w, d, s, h, id) {
         w.roistatProjectId = id;
         w.roistatHost = h;
-        var p = d.location.protocol === "https:" ? "https://" : "http://";
         var u = /^.*roistat_visit=[^;]+(.*)?$/.test(d.cookie)
           ? "/dist/module.js"
-          : "/api/site/1.0/" + id + "/init?referrer=" + encodeURIComponent(d.location.href);
+          : "/api/site/1.0/" + id + "/init?referrer=" + encodeURIComponent(d.location.origin + d.location.pathname);
         var js = d.createElement(s);
         js.charset = "UTF-8";
         js.async = 1;
-        js.src = p + h + u;
+        js.referrerPolicy = "no-referrer";
+        js.src = "https://" + h + u;
         var js2 = d.getElementsByTagName(s)[0];
         js2.parentNode.insertBefore(js, js2);
       })(window, document, "script", ROISTAT_HOST, ROISTAT_PROJECT_ID);
@@ -199,7 +210,7 @@
   // speculatively). No currency/value — this is a non-revenue event — and
   // no PII: source_page + lead_id only.
   window.animaTrackLead = function (sourcePage, leadId, origin, deliveryStatus, extra) {
-    var sp = sourcePage || location.pathname;
+    var sp = pagePath(sourcePage);
     var leadOrigin = origin === "agent" || origin === "chatkit" ? origin : "human";
     var ds = deliveryStatus === "confirmed" || deliveryStatus === "unconfirmed" ? deliveryStatus : "";
     // lead_source (form | webmcp | chatkit) and ai_source (chatgpt, ...) are

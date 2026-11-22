@@ -252,7 +252,7 @@
   }
   function saveOutbox(data, origin) {
     try {
-      if (!data || !data.contact) return null;
+      if (!data || data.consent !== true || !data.contact) return null;
       var id = genOutboxId();
       var list = readOutbox();
       list.push({ id: id, ts: Date.now(), origin: origin || "human", data: data });
@@ -275,6 +275,7 @@
   // widget's own form element for ChatKit.
   var OUTBOX_PENDING = new WeakMap();
   function supersedeOutboxFor(key, data, origin) {
+    if (!data || data.consent !== true || !data.contact) return;
     var prev = OUTBOX_PENDING.get(key);
     if (prev) removeOutboxEntry(prev);
     var id = saveOutbox(data, origin);
@@ -297,8 +298,11 @@
       var list = readOutbox();
       // Purge expired PII even if no delivery channel is configured.
       writeOutbox(list);
-      var endpoint = intakeUrl(chatEndpoint());
-      if (endpoint) {
+      var configuredEndpoint = chatEndpoint();
+      var endpoint = intakeUrl(configuredEndpoint);
+      if (configuredEndpoint) {
+        // Invalid configuration cannot authorize a different sender on replay.
+        if (!endpoint) return;
         list.filter(function (x) {
           return x.endpoint === endpoint && x.id && x.data.consent === true;
         }).forEach(sendIntake);
@@ -311,7 +315,7 @@
         readOutbox().forEach(function (item) {
           // A server-bound item may already be committed: never hand it to
           // Roistat when endpoint config is removed or changes.
-          if (item.endpoint) { left.push(item); return; }
+          if (item.endpoint || item.data.consent !== true) { left.push(item); return; }
           var id = reachRoistat(item.data, item.origin);
           if (id) fireAccepted(item.data.source_page, id, item.origin, "unconfirmed", item.data); else left.push(item);
         });
@@ -625,6 +629,8 @@
   // lead_id, or null if reach() itself threw (never claim success without a
   // real reach call — caller falls through to the fallback path on null).
   function reachRoistat(data, origin) {
+    // Recheck at the sender as consent may have changed during the async wait.
+    if (!data || data.consent !== true || !data.contact) return null;
     var leadId = genLeadId();
     var leadSource = leadSourceFor(data, origin);
     var ai = data.ai_source || "";
@@ -672,14 +678,20 @@
     return leadId;
   }
 
-  // Reuse ADV-Strategy-Core's dedicated Anima intake. No CRM URL, token,
-  // tenant selector or secondary provider is accepted from browser input.
+  // Dedicated Anima Worker or a same-origin intake. A valid route alone does
+  // not establish destination ownership. Loopback is usable only from a local
+  // development/test page, never from the public site.
+  var INTAKE_ORIGIN = "https://anima-lead.animacoffeeco-ua.workers.dev";
+  function isLoopback(host) {
+    return host === "127.0.0.1" || host === "localhost" || host === "[::1]";
+  }
   function intakeUrl(endpoint) {
     try {
       var u = new URL(endpoint, location.href);
-      var local = u.hostname === "127.0.0.1" || u.hostname === "localhost";
+      var local = isLoopback(location.hostname) && isLoopback(u.hostname);
       if ((u.protocol !== "https:" && !(local && u.protocol === "http:")) ||
           u.pathname !== "/api/anima/lead" || u.username || u.password || u.search || u.hash) return "";
+      if (!local && u.origin !== INTAKE_ORIGIN && u.origin !== location.origin) return "";
       return u.href;
     } catch (e) { return ""; }
   }
@@ -700,17 +712,20 @@
     // client-side path): channel, AI answer engine and the Roistat visit id,
     // which the server cannot read itself because credentials are omitted.
     p.lead_source = /^(form|webmcp|chatkit)$/.test(data.lead_source || "") ? data.lead_source : leadSourceFor(data, "");
-    p.ai_source = /^[a-z0-9-]{1,20}$/.test(data.ai_source || "") ? data.ai_source : aiSource();
-    // The visit id captured at submit time wins (it survives replay); the cookie is only a fallback.
-    if (!p.roistat_visit) {
-      var rv = /(?:^|;\s*)roistat_visit=([A-Za-z0-9_-]{1,64})/.exec(document.cookie || "");
-      p.roistat_visit = rv ? rv[1] : "";
-    }
+    // Serialize the original snapshot, including blank/legacy missing values.
+    // Reading a later visit/referrer here changes the payload under the same key.
+    p.ai_source = /^[a-z0-9-]{1,20}$/.test(data.ai_source || "") ? data.ai_source : "";
     return p;
   }
 
   var intakePending = {};
   function sendIntake(item) {
+    // Revalidate persisted data at the final sender boundary as well as enqueue.
+    if (!item || !item.id || !item.data || item.data.consent !== true ||
+        intakeUrl(item.endpoint) !== item.endpoint || !Number.isFinite(item.ts) ||
+        item.ts > Date.now() || Date.now() - item.ts >= OUTBOX_TTL_MS) {
+      return Promise.resolve(notConnectedResult());
+    }
     if (intakePending[item.id]) return intakePending[item.id];
     var controller = new AbortController();
     var timer = setTimeout(function () { controller.abort(); }, 10000);
@@ -723,7 +738,7 @@
       if (r.status !== 200) throw new Error("not_accepted");
       return r.json();
     }).then(function (body) {
-      if (!body || body.status !== "accepted" ||
+      if (!body || body.status !== "accepted" || body.receipt !== "stored" ||
           !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.lead_id || "")) {
         throw new Error("invalid_receipt");
       }
@@ -751,6 +766,7 @@
     if (!/^(form|webmcp|chatkit)$/.test(data.lead_source || "")) data.lead_source = leadSourceFor(data, origin);
     var url = intakeUrl(endpoint);
     if (!Object.prototype.hasOwnProperty.call(data, "roistat_visit")) data.roistat_visit = readRoistatVisit();
+    if (!Object.prototype.hasOwnProperty.call(data, "ai_source")) data.ai_source = aiSource();
     if (!url || data.consent !== true || !data.contact) return Promise.resolve(notConnectedResult());
     var list = readOutbox();
     var fingerprint = JSON.stringify(intakePayload(data, ""));
@@ -970,6 +986,9 @@
   // instance -- optional so a caller with no stable key just never
   // supersedes (falls back to saveOutbox's old stacking behaviour).
   function submitChat(data, formKey) {
+    // This shared API is callable without the chat UI's checkbox handler.
+    // Reject before mutation, retention, waiting for a provider or any sender.
+    if (!data || data.consent !== true || !data.contact) return Promise.resolve(notConnectedResult());
     var origin = "chatkit";
     var endpoint = chatEndpoint();
     data.lead_origin = origin;
