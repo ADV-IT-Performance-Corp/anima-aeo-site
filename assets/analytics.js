@@ -151,9 +151,24 @@
     }
     return "";
   }
+  // Agents that drive a real browser on the visitor's behalf announce
+  // themselves in navigator.userAgent. Google-Agent (Google's user-triggered
+  // agent, docs: developers.google.com/crawling/docs/crawlers-fetchers/
+  // google-user-triggered-fetchers#google-agent) carries the token
+  // "Google-Agent" in both its mobile and desktop UA. Checked before utm and
+  // referrer because the agent, not the link it followed, is the channel.
+  var AI_AGENT_UA = [["Google-Agent", "google-agent"]];
+  function agentLabel(ua) {
+    ua = ua || "";
+    for (var i = 0; i < AI_AGENT_UA.length; i++) {
+      if (ua.indexOf(AI_AGENT_UA[i][0]) !== -1) return AI_AGENT_UA[i][1];
+    }
+    return "";
+  }
   function detectAiSource() {
     var via = "", label = "";
-    try {
+    try { label = agentLabel(navigator.userAgent); via = label ? "user-agent" : ""; } catch (e) {}
+    if (!label) try {
       var u = new URLSearchParams(location.search).get("utm_source");
       u = (u || "").toLowerCase();
       if (u && Object.prototype.hasOwnProperty.call(AI_UTM, u)) { label = AI_UTM[u]; via = "utm"; }
